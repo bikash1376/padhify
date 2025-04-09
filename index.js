@@ -1,16 +1,16 @@
 const express = require('express');
-const app = express();
+const mongoose = require('mongoose')
+require('dotenv').config()
 const { courseRouter }  = require('../backend/routes/courses.routes')
-// const { userRouter }  = require('../backend/routes/user.routes')
 const {userRouter} = require('../backend/routes/user.routes');
 const { adminRouter } = require('./routes/admin.routes');
+// const { default: mongoose } = require('mongoose');
 
-// app.use(express.json());
 
-// ---------- Public Home ----------
+const app = express();
+app.use(express.json());
+
 app.use('/', courseRouter);
-
-// ---------- User Routes ----------
 app.use('/api/users/', userRouter);
 
 // app.post('/api/courses/:courseId/purchase', (req, res) => {
@@ -18,15 +18,29 @@ app.use('/api/users/', userRouter);
 // });
 
 
-
-// ---------- Admin Routes ----------
 app.use('/api/admin/', adminRouter);
 
-// ---------- Not Found Handler ----------
+
+
 app.use((req, res) => {
     res.status(404).json("Page Not Found");
 });
 
-app.listen(3000, () => {
-    console.log("running");
-});
+
+
+
+async function main() {
+    try {
+        await mongoose.connect(process.env.MONGO_URL);
+        console.log("Connected to DB");
+        
+        app.listen(3000, () => {
+            console.log("Listening on port 3000");
+        });
+    } catch (error) {
+        console.error("Failed to connect to DB:", error.message);
+        process.exit(1); // Optional: exit the process if DB connection fails
+    }
+}
+
+main();

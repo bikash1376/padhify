@@ -9,6 +9,8 @@ userRouter.get('/signup', (req, res) => {
 userRouter.get('/login', (req, res) => {
     res.json("User login endpoint")
 })
+
+
 userRouter.get('/purchases', (req, res) => {
     res.json("User purchases endpoint")
 })
