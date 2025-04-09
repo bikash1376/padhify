@@ -1,10 +1,15 @@
 const express = require('express');
-const coursesRouter = express.Router();
+const courseRouter = express.Router();
 
 
-    coursesRouter.get('/', (req, res) => {
-        res.json("All courses at once place")
+    courseRouter.get('/', (req, res) => {
+        res.json("Padhify home")
     })
 
 
-module.exports =  {coursesRouter};
+    courseRouter.get('/all-courses', (req, res) => {
+        res.json("All courses")
+    })
+
+module.exports =  {courseRouter};
+

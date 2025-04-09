@@ -1,53 +1,26 @@
 const express = require('express');
 const app = express();
-const { coursesRouter }  = require('../backend/routes/courses.routes')
+const { courseRouter }  = require('../backend/routes/courses.routes')
+// const { userRouter }  = require('../backend/routes/user.routes')
+const {userRouter} = require('../backend/routes/user.routes');
+const { adminRouter } = require('./routes/admin.routes');
 
 // app.use(express.json());
 
 // ---------- Public Home ----------
-app.get('/', coursesRouter);
+app.use('/', courseRouter);
 
 // ---------- User Routes ----------
-app.post('/api/users/signup', (req, res) => {
-    res.json("User signup");
-});
+app.use('/api/users/', userRouter);
 
-app.post('/api/users/login', (req, res) => {
-    res.json("User login");
-});
+// app.post('/api/courses/:courseId/purchase', (req, res) => {
+//     res.json("Purchase a course");
+// });
 
-app.get('/api/courses', (req, res) => {
-    res.json("All courses");
-});
 
-app.post('/api/courses/:courseId/purchase', (req, res) => {
-    res.json("Purchase a course");
-});
-
-app.get('/api/users/purchased-courses', (req, res) => {
-    res.json("User's purchased courses");
-});
 
 // ---------- Admin Routes ----------
-app.post('/api/admin/signup', (req, res) => {
-    res.json("Admin signup");
-});
-
-app.post('/api/admin/login', (req, res) => {
-    res.json("Admin login");
-});
-
-app.post('/api/admin/courses', (req, res) => {
-    res.json("Create a new course");
-});
-
-app.delete('/api/admin/courses/:courseId', (req, res) => {
-    res.json("Delete a course");
-});
-
-app.post('/api/admin/courses/:courseId/content', (req, res) => {
-    res.json("Add content to a course");
-});
+app.use('/api/admin/', adminRouter);
 
 // ---------- Not Found Handler ----------
 app.use((req, res) => {
