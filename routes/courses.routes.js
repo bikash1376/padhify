@@ -1,4 +1,5 @@
 const express = require('express');
+const { courseModel } = require('../db');
 const courseRouter = express.Router();
 
 
@@ -7,9 +8,11 @@ const courseRouter = express.Router();
     })
 
 
-    courseRouter.get('/all-courses', (req, res) => {
-        res.json("All courses")
+    courseRouter.get('/preview', async (req, res) => {
+        const courses = await courseModel.find({});
+
+        res.json({courses})
     })
 
-module.exports =  {courseRouter};
+module.exports =  {courseRouter:courseRouter};
 

@@ -39,7 +39,7 @@ async function main() {
         });
     } catch (error) {
         console.error("Failed to connect to DB:", error.message);
-        process.exit(1); // Optional: exit the process if DB connection fails
+        process.exit(1); 
     }
 }
 
