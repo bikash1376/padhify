@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const { userModel, purchaseModel } = require('../db');
+const { userModel, purchaseModel, courseModel } = require('../db');
 const jwt = require("jsonwebtoken");
 const z = require('zod');
 const bcrypt = require('bcrypt')
-const JWT_USER_PASSWORD = require('../config')
+const JWT_USER_PASSWORD = process.env.JWT_USER_PASSWORD || "your-secret-key";
 
 const userRouter = Router();
 
@@ -45,31 +45,37 @@ userRouter.post("/signup", async (req, res) => {
 });
 
 
-userRouter.get('/login', (req, res) => {
-    const {email, password} = req.body;
-    
-    const user = userModel.findOne({
-        email:email,
-        password:password
-    })
+userRouter.post("/login", async (req, res) => {
+    const { email, password } = req.body;
 
-    if(user) {
-        const token = jwt.sign({
-            id:user._id
-        }, JWT_USER_PASSWORD)
+    try {
+        // 1. Find user by email
+        const user = await userModel.findOne({ email });
 
+        if (!user) {
+            return res.status(403).json({ message: "User not found" });
+        }
 
+        // 2. Compare hashed passwords
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        res.json({
-            token:token
-        })
+        if (!passwordMatch) {
+            return res.status(403).json({ message: "Incorrect password" });
+        }
+
+        // 3. Create JWT
+        const token = jwt.sign(
+            { id: user._id },
+            JWT_USER_PASSWORD,
+            { expiresIn: "1h" } // optional: set token expiration
+        );
+
+        res.json({ token });
+    } catch (err) {
+        console.error("Login error:", err);
+        res.status(500).json({ message: "Internal server error" });
     }
-    else {
-        res.status(403).json({
-            message: "Incorrect credentials"
-        })
-    }  
-})
+});
 
 
 userRouter.get('/purchases', async (req, res) => {

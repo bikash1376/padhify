@@ -1,29 +1,110 @@
-const express = require('express');
+const { Router } = require("express");
+const adminRouter = Router();
+const { adminModel, courseModel } = require("../db");
+const jwt = require("jsonwebtoken");
+// brcypt, zod, jsonwebtoken
+const JWT_ADMIN_PASSWORD = process.env.JWT_ADMIN_PASSWORD || "your-admin-key";
+const { adminMiddleware } = require("../middlewares/admin");
 
-const adminRouter = express.Router();
 
-adminRouter.get('/signup', (req, res) => {
-    res.json('Admin Signup endpoint')
+adminRouter.post("/signup", async function(req, res) {
+    const { email, password, firstName, lastName } = req.body; // TODO: adding zod validation
+    // TODO: hash the password so plaintext pw is not stored in the DB
+
+    // TODO: Put inside a try catch block
+    await adminModel.create({
+        email: email,
+        password: password,
+        firstName: firstName, 
+        lastName: lastName
+    })
+    
+    res.json({
+        message: "Signup succeeded"
+    })
 })
 
-adminRouter.get('/login', (req, res) => {
-    res.json('Admin login endpoint')
+adminRouter.post("/login", async function(req, res) {
+    const { email, password } = req.body;
+
+    // TODO: ideally password should be hashed, and hence you cant compare the user provided password and the database password
+    const admin = await adminModel.findOne({
+        email: email,
+        password: password
+    });
+
+    if (admin) {
+        const token = jwt.sign({
+            id: admin._id
+        }, JWT_ADMIN_PASSWORD);
+
+        // Do cookie logic
+
+        res.json({
+            token: token
+        })
+    } else {
+        res.status(403).json({
+            message: "Incorrect credentials"
+        })
+    }
 })
 
-adminRouter.get('/create-course', (req, res) => {
-    res.json('Admin create course endpoint')
+adminRouter.post("/course", adminMiddleware, async function(req, res) {
+    const adminId = req.userId;
+
+    const { title, description, imageUrl, price } = req.body;
+
+    // creating a web3 saas in 6 hours
+    const course = await courseModel.create({
+        title: title, 
+        description: description, 
+        imageUrl: imageUrl, 
+        price: price, 
+        creatorId: adminId
+    })
+
+    res.json({
+        message: "Course created",
+        courseId: course._id
+    })
 })
 
-adminRouter.get('/update-course', (req, res) => {
-    res.json('Admin update course endpoint')
+adminRouter.put("/course", adminMiddleware, async function(req, res) {
+    const adminId = req.userId;
+
+    const { title, description, imageUrl, price, courseId } = req.body;
+
+    // creating a web3 saas in 6 hours
+    const course = await courseModel.updateOne({
+        _id: courseId, 
+        creatorId: adminId 
+    }, {
+        title: title, 
+        description: description, 
+        imageUrl: imageUrl, 
+        price: price
+    })
+
+    res.json({
+        message: "Course updated",
+        courseId: course._id
+    })
 })
 
+adminRouter.get("/course/bulk", adminMiddleware,async function(req, res) {
+    const adminId = req.userId;
 
-adminRouter.get('/course/bulk', (req, res) => {
-    res.json('Admin bulk course endpoint')
+    const courses = await courseModel.find({
+        creatorId: adminId 
+    });
+
+    res.json({
+        message: "Course updated",
+        courses
+    })
 })
-
 
 module.exports = {
-    adminRouter:adminRouter
+    adminRouter: adminRouter
 }

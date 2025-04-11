@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
-const { JWT_ADMIN_PASSWORD } = require("../config");
+const JWT_ADMIN_PASSWORD = process.env.JWT_ADMIN_PASSWORD || "your-admin-key";
 
 function adminMiddleware(req, res, next) {
-    const token = req.headers.token;
+    const token = req.headers.authorization;
     const decoded = jwt.verify(token, JWT_ADMIN_PASSWORD);
 
     if (decoded) {
